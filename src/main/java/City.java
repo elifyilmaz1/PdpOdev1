@@ -4,20 +4,21 @@ import java.util.List;
 
 import com.github.javafaker.Faker;
 
-/**
- * A city is built from a numeric code: tens = districts, units = neighborhoods (target),
- * whole number = population. Names use Faker.
- */
 public class City {
 
     private final int seedCode;
     private String name;
     private final List<District> districts;
+    private boolean hasSplit = false;
 
     private City(int seedCode, String name, List<District> districts) {
         this.seedCode = seedCode;
         this.name = name;
         this.districts = districts;
+    }
+
+    private City(int seedCode, String name) {
+        this(seedCode, name, new ArrayList<>());
     }
 
     public static City fromSeed(int code, Faker faker) {
@@ -48,24 +49,19 @@ public class City {
         return new City(code, cityName, built);
     }
 
-    private City(int seedCode, String name) {
-        this(seedCode, name, new ArrayList<>());
-    }
-
-    /**
-     * @return the new city created from the split, or {@code null} if no split occurred
-     */
     public City splitIfNeeded(Faker faker) {
-        if (getPopulation() < 1000) {
+        if (hasSplit || getPopulation() < 1000) { 
             return null;
         }
-        hasSplit = true;
         int d = districts.size();
         int newCityDistricts = d / 2;
         int oldCityDistricts = d - newCityDistricts;
         if (newCityDistricts <= 0) {
             return null;
         }
+
+        hasSplit = true; 
+
         List<District> moving = new ArrayList<>();
         for (int i = oldCityDistricts; i < districts.size(); i++) {
             moving.add(districts.get(i));
@@ -73,6 +69,7 @@ public class City {
         while (districts.size() > oldCityDistricts) {
             districts.remove(districts.size() - 1);
         }
+
         City spawned = new City(seedCode, faker.address().city());
         spawned.districts.addAll(moving);
         return spawned;
@@ -84,7 +81,6 @@ public class City {
             return;
         }
         int rate = growthRate();
-        // Add exactly growthRate new people to EACH neighborhood (bottom-up, never multiply city total)
         for (Neighborhood hood : flat) {
             for (int j = 0; j < rate; j++) {
                 hood.addPerson(new Person(faker.name().fullName(), (int) faker.number().numberBetween(0, 50)));
@@ -103,8 +99,10 @@ public class City {
     }
 
     public int growthRate() {
-        int tens = seedCode / 10;
-        int units = seedCode % 10;
+        int pop = getPopulation();
+        int lastTwo = pop % 100;
+        int tens = lastTwo / 10;
+        int units = lastTwo % 10;
         int sum = tens + units;
         return sum == 0 ? 1 : sum;
     }
@@ -137,14 +135,6 @@ public class City {
         return districts.size();
     }
 
-    private int countNeighborhoods() {
-        int c = 0;
-        for (District d : districts) {
-            c += d.getNeighborhoodCount();
-        }
-        return c;
-    }
-
     private List<Neighborhood> allNeighborhoods() {
         List<Neighborhood> list = new ArrayList<>();
         for (District d : districts) {
@@ -162,26 +152,5 @@ public class City {
             return value;
         }
         return value + (divisor - rem);
-    }
-    private boolean hasSplit = false;
-
-    /** Smallest multiple of divisor that is at least value, capped at Integer.MAX_VALUE (then floored to a multiple). */
-    private static int nextMultipleAtLeastCapped(long value, int divisor) {
-        if (divisor <= 0 || value <= 0) {
-            return 0;
-        }
-        long v = value;
-        long rem = v % divisor;
-        if (rem != 0) {
-            v += divisor - rem;
-        }
-        if (v > Integer.MAX_VALUE) {
-            v = Integer.MAX_VALUE;
-            rem = v % divisor;
-            if (rem != 0) {
-                v -= rem;
-            }
-        }
-        return (int) v;
     }
 }

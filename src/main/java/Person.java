@@ -1,8 +1,6 @@
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Represents a resident with a globally unique id.
- */
+
 public class Person {
 
     private static final AtomicLong NEXT_ID = new AtomicLong(1);

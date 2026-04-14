@@ -3,9 +3,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.javafaker.Faker;
-/**
- * A district groups neighborhoods and is named via Faker.
- */
+
 public class District {
 
     private final String name;
