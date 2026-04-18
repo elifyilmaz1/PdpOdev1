@@ -1,11 +1,11 @@
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Person {
 
-    private static final AtomicLong NEXT_ID = new AtomicLong(1);
+    private static final AtomicInteger NEXT_ID = new AtomicInteger(1);
 
-    private final long id;
+    private final int id;
     private final String name;
     private int age;
 
@@ -15,7 +15,7 @@ public class Person {
         this.age = age;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 

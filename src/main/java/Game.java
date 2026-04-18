@@ -22,32 +22,29 @@ public class Game {
         System.out.println("--- BAŞLANGIÇ DURUMU ---");
         printGrid();
         System.out.println();
-
         for (int r = 1; r <= rounds; r++) {
-            runSingleRound(r);
+            runSingleRound();
             clearConsole();
-            System.out.println( + r + ". TURUN SONU");
+            System.out.println( r + ". TURUN SONU");
             printGrid();
         }
     }
 
-    private void runSingleRound(int round) {
-        for (City city : cities) {
-            int before = city.getPopulation();
+    private void runSingleRound() {
+        for (City city : new ArrayList<>(cities)) {
             city.applyPopulationGrowth(faker);
-            int after = city.getPopulation();
-            int added = after - before;
         }
 
-        for (City city : cities) {
+        for (City city : new ArrayList<>(cities)) {
             city.incrementAllAges();
         }
 
         List<City> spawned = new ArrayList<>();
-        for (City city : new ArrayList<>(cities)) {
-            int popBefore = city.getPopulation();
+        for (City city : new ArrayList<>(cities)) { 
             City child = city.splitIfNeeded(faker);
-            
+            if (child != null) {
+                spawned.add(child);
+            }
         }
         cities.addAll(spawned);
     }
@@ -80,19 +77,22 @@ public class Game {
     public void printCityDetails(int row, int col) {
         int idx = row * CITIES_PER_ROW + col;
         if (idx < 0 || idx >= cities.size()) {
-            System.out.println("Geçersiz seçim: satır " + (row + 1) + ", sütun " + (col + 1) + ".");
+            System.out.println("Geçersiz seçim: satır " + row + ", sütun " + col + ".");
             return;
         }
         City city = cities.get(idx);
+        System.out.println("Şehir Bilgisi:");
         System.out.println("Şehir: " + city.getName() + " - Nüfus: " + city.getPopulation());
         System.out.println();
         for (District district : city.getDistricts()) {
+            System.out.println("İlçe:");
             System.out.println("İlçe: " + district.getName() + " - Nüfus: " + district.getPopulation());
             for (Neighborhood hood : district.getNeighborhoods()) {
-                System.out.println("  Mahalle: " + hood.getName() + " - Nüfus: " + hood.getPopulation());
-                System.out.println("  Kişiler:");
+                System.out.println("Mahalle:");
+                System.out.println("Mahalle: " + hood.getName() + " - Nüfus: " + hood.getPopulation());
+                System.out.println("Kişiler:");
                 for (Person p : hood.getPeople()) {
-                    System.out.println("    " + p.getId() + " - " + p.getName() + " - " + p.getAge());
+                    System.out.println(p.getId() + " - " + p.getName() + " - " + p.getAge());
                 }
             }
             System.out.println();

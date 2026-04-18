@@ -13,7 +13,7 @@ public class Main {
 		System.out.print("Tur Sayısını Giriniz: ");
 		int rounds = Integer.parseInt(scanner.nextLine().trim());
 
-		System.out.println("Şehir Kodlarını Giriniz: (örn. 18 25 79 37 62 86 17 50)");
+		System.out.println("Şehir Kodlarını Giriniz:");
 		String line = scanner.nextLine().trim();
 		String[] parts = line.split("\\s+");
 		List<City> cities = new ArrayList<>();
@@ -32,7 +32,7 @@ public class Main {
 		int col = Integer.parseInt(scanner.nextLine().trim());
 
 		clearConsole();
-		game.printCityDetails(row - 1, col - 1);
+		game.printCityDetails(row, col);
 		scanner.close();
 	}
 

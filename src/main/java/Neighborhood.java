@@ -4,9 +4,7 @@ import java.util.List;
 
 import com.github.javafaker.Faker;
 
-/**
- * A neighborhood contains people and is named via Faker.
- */
+
 public class Neighborhood {
 
 	private final String name;

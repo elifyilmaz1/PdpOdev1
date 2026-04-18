@@ -6,151 +6,184 @@ import com.github.javafaker.Faker;
 
 public class City {
 
-    private final int seedCode;
-    private String name;
-    private final List<District> districts;
-    private boolean hasSplit = false;
+	private final int seedCode;
+	private String name;
+	private final List<District> districts;
 
-    private City(int seedCode, String name, List<District> districts) {
-        this.seedCode = seedCode;
-        this.name = name;
-        this.districts = districts;
-    }
+	private City(int seedCode, String name, List<District> districts) {
+		this.seedCode = seedCode;
+		this.name = name;
+		this.districts = districts;
+	}
 
-    private City(int seedCode, String name) {
-        this(seedCode, name, new ArrayList<>());
-    }
+	private City(int seedCode, String name) {
+		this(seedCode, name, new ArrayList<>());
+	}
 
-    public static City fromSeed(int code, Faker faker) {
-        int tens = code / 10;
-        int units = code % 10;
-        int districtCount = Math.max(1, tens);
-        int targetNeighborhoods = Math.max(1, units);
-        int totalNeighborhoods = nextMultipleAtLeast(targetNeighborhoods, districtCount);
-        int population = nextMultipleAtLeast(code, totalNeighborhoods);
+	
+	public static City fromSeed(int code, Faker faker) {
+	    int tens = code / 10;
+	    int units = code % 10;
+	    int districtCount = Math.max(1, tens);
 
-        String cityName = faker.address().city();
-        List<District> built = new ArrayList<>();
-        int neighborhoodsPerDistrict = totalNeighborhoods / districtCount;
-        int peoplePerNeighborhood = population / totalNeighborhoods;
+	    int totalNeighborhoods;
+	    boolean overflowed = false; // ← overflow flag'i
 
-        for (int d = 0; d < districtCount; d++) {
-            District district = District.create(faker);
-            for (int n = 0; n < neighborhoodsPerDistrict; n++) {
-                Neighborhood hood = Neighborhood.create(faker);
-                for (int p = 0; p < peoplePerNeighborhood; p++) {
-                    hood.addPerson(new Person(faker.name().fullName(), (int) faker.number().numberBetween(0, 50)));
-                }
-                district.addNeighborhood(hood);
-            }
-            built.add(district);
-        }
+	    if (units == 0) {
+	        totalNeighborhoods = districtCount;
+	        overflowed = false; // units=0 durumu, overflow değil
+	    } else {
+	        int rem = units % districtCount;
+	        if (rem == 0) {
+	            totalNeighborhoods = units; // 62→6, 86→8 gibi zaten tam bölünüyor
+	            overflowed = false;
+	        } else {
+	            int roundedUp = units + (districtCount - rem);
+	            if (roundedUp <= 9) {
+	                totalNeighborhoods = roundedUp; // 25→6, 37→9 gibi normal yuvarlama
+	                overflowed = false;
+	            } else {
+	                totalNeighborhoods = districtCount; // 79→7 gibi taşma
+	                overflowed = true;
+	            }
+	        }
+	    }
 
-        return new City(code, cityName, built);
-    }
+	    // Nüfus: sadece gerçekten taştıysa floor, diğer tüm durumlarda ceiling formülü
+	    int perHood;
+	    if (overflowed) {
+	        perHood = Math.max(1, code / totalNeighborhoods); // 79/7=11 → pop=77
+	    } else {
+	        perHood = (code + totalNeighborhoods) / totalNeighborhoods; // ceiling
+	    }
+	    int population = perHood * totalNeighborhoods;
 
-    public City splitIfNeeded(Faker faker) {
-        if (hasSplit || getPopulation() < 1000) { 
-            return null;
-        }
-        int d = districts.size();
-        int newCityDistricts = d / 2;
-        int oldCityDistricts = d - newCityDistricts;
-        if (newCityDistricts <= 0) {
-            return null;
-        }
+	    String cityName = faker.address().city();
+	    List<District> built = new ArrayList<>();
+	    int neighborhoodsPerDistrict = totalNeighborhoods / districtCount;
 
-        hasSplit = true; 
+	    for (int d = 0; d < districtCount; d++) {
+	        District district = District.create(faker);
+	        for (int n = 0; n < neighborhoodsPerDistrict; n++) {
+	            Neighborhood hood = Neighborhood.create(faker);
+	            for (int p = 0; p < perHood; p++) {
+	                hood.addPerson(new Person(
+	                    faker.name().fullName(),
+	                    (int) faker.number().numberBetween(0, 51)
+	                ));
+	            }
+	            district.addNeighborhood(hood);
+	        }
+	        built.add(district);
+	    }
+	    return new City(code, cityName, built);
+	}
+	public City splitIfNeeded(Faker faker) {
+		if (getPopulation() < 1000) {
+			return null;
+		}
 
-        List<District> moving = new ArrayList<>();
-        for (int i = oldCityDistricts; i < districts.size(); i++) {
-            moving.add(districts.get(i));
-        }
-        while (districts.size() > oldCityDistricts) {
-            districts.remove(districts.size() - 1);
-        }
+		int d = districts.size();
+		int newCityDistrictCount = d / 2;
+		int oldCityDistrictCount = d - newCityDistrictCount;
 
-        City spawned = new City(seedCode, faker.address().city());
-        spawned.districts.addAll(moving);
-        return spawned;
-    }
+		if (newCityDistrictCount <= 0) {
+			return null;
+		}
 
-    public void applyPopulationGrowth(Faker faker) {
-        List<Neighborhood> flat = allNeighborhoods();
-        if (flat.isEmpty()) {
-            return;
-        }
-        int rate = growthRate();
-        for (Neighborhood hood : flat) {
-            for (int j = 0; j < rate; j++) {
-                hood.addPerson(new Person(faker.name().fullName(), (int) faker.number().numberBetween(0, 50)));
-            }
-        }
-    }
+		List<District> moving = new ArrayList<>();
+		for (int i = oldCityDistrictCount; i < d; i++) {
+			moving.add(districts.get(i));
+		}
 
-    public void incrementAllAges() {
-        for (District district : districts) {
-            for (Neighborhood hood : district.getNeighborhoods()) {
-                for (Person person : hood.getPeople()) {
-                    person.incrementAge();
-                }
-            }
-        }
-    }
+		districts.subList(oldCityDistrictCount, d).clear();
 
-    public int growthRate() {
-        int pop = getPopulation();
-        int lastTwo = pop % 100;
-        int tens = lastTwo / 10;
-        int units = lastTwo % 10;
-        int sum = tens + units;
-        return sum == 0 ? 1 : sum;
-    }
+		City spawned = new City(seedCode, faker.address().city());
+		spawned.districts.addAll(moving);
+		return spawned;
+	}
 
-    public int getSeedCode() {
-        return seedCode;
-    }
+	public void applyPopulationGrowth(Faker faker) {
+	    List<Neighborhood> flat = allNeighborhoods();
+	    if (flat.isEmpty()) return;
 
-    public String getName() {
-        return name;
-    }
+	    int rate = growthRate();
+	    if (rate == 0) rate = 1;   // sıfırsa her mahallede 1 kişi artar
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	    for (Neighborhood hood : flat) {
+	        int current = hood.getPeople().size();
+	        int toAdd = current * rate - current;  // (rate-1) × current kadar ekle
+	        for (int i = 0; i < toAdd; i++) {
+	            hood.addPerson(new Person(
+	                faker.name().fullName(),
+	                (int) faker.number().numberBetween(0, 51)
+	            ));
+	        }
+	    }
+	}
 
-    public List<District> getDistricts() {
-        return Collections.unmodifiableList(districts);
-    }
+	public void incrementAllAges() {
+		for (District district : districts) {
+			for (Neighborhood hood : district.getNeighborhoods()) {
+				for (Person person : hood.getPeople()) {
+					person.incrementAge();
+				}
+			}
+		}
+	}
 
-    public int getPopulation() {
-        int sum = 0;
-        for (District d : districts) {
-            sum += d.getPopulation();
-        }
-        return sum;
-    }
+	public int growthRate() {
+		int pop = getPopulation();
+		int lastTwo = pop % 100;
+		int tens = lastTwo / 10;
+		int units = lastTwo % 10;
+		return tens + units;
+	}
 
-    public int getDistrictCount() {
-        return districts.size();
-    }
+	public int getSeedCode() {
+		return seedCode;
+	}
 
-    private List<Neighborhood> allNeighborhoods() {
-        List<Neighborhood> list = new ArrayList<>();
-        for (District d : districts) {
-            list.addAll(d.getNeighborhoods());
-        }
-        return list;
-    }
+	public String getName() {
+		return name;
+	}
 
-    private static int nextMultipleAtLeast(int value, int divisor) {
-        if (divisor <= 0) {
-            return value;
-        }
-        int rem = value % divisor;
-        if (rem == 0) {
-            return value;
-        }
-        return value + (divisor - rem);
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public List<District> getDistricts() {
+		return Collections.unmodifiableList(districts);
+	}
+
+	public int getPopulation() {
+		int sum = 0;
+		for (District d : districts) {
+			sum += d.getPopulation();
+		}
+		return sum;
+	}
+
+	public int getDistrictCount() {
+		return districts.size();
+	}
+
+	private List<Neighborhood> allNeighborhoods() {
+		List<Neighborhood> list = new ArrayList<>();
+		for (District d : districts) {
+			list.addAll(d.getNeighborhoods());
+		}
+		return list;
+	}
+
+	private static int nextMultipleAtLeast(int value, int divisor) {
+		if (divisor <= 0) {
+			return value;
+		}
+		int rem = value % divisor;
+		if (rem == 0) {
+			return value;
+		}
+		return value + (divisor - rem);
+	}
 }
