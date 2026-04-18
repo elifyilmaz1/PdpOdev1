@@ -1,3 +1,13 @@
+ /**
+  *
+  * @author Elif Yılmaz - elif.yilmaz41@ogr.sakarya.edu.tr
+  * @since 11 Nisan 2026
+  * <p>
+  * Şehir Nüfus Simülasyonu projesi kapsamında geliştirilen sınıftır.
+  * Nesne yönelimli programlama prensipleri kullanılarak oluşturulmuştur.
+  * </p>
+  * @group 1B
+  */
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -32,23 +42,18 @@ public class Game {
 
     private void runSingleRound() {
         for (City city : new ArrayList<>(cities)) {
-            city.applyPopulationGrowth(faker);
+            city.applyPopulationGrowth(faker);  
         }
-
         for (City city : new ArrayList<>(cities)) {
-            city.incrementAllAges();
+            city.incrementAllAges();             
         }
-
         List<City> spawned = new ArrayList<>();
-        for (City city : new ArrayList<>(cities)) { 
+        for (City city : new ArrayList<>(cities)) {
             City child = city.splitIfNeeded(faker);
-            if (child != null) {
-                spawned.add(child);
-            }
+            if (child != null) spawned.add(child);
         }
         cities.addAll(spawned);
     }
-
     private void clearConsole() {
         try {
             String os = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
@@ -81,14 +86,11 @@ public class Game {
             return;
         }
         City city = cities.get(idx);
-        System.out.println("Şehir Bilgisi:");
         System.out.println("Şehir: " + city.getName() + " - Nüfus: " + city.getPopulation());
         System.out.println();
         for (District district : city.getDistricts()) {
-            System.out.println("İlçe:");
             System.out.println("İlçe: " + district.getName() + " - Nüfus: " + district.getPopulation());
-            for (Neighborhood hood : district.getNeighborhoods()) {
-                System.out.println("Mahalle:");
+            for (Neighbourhood hood : district.getNeighbourhoods()) {
                 System.out.println("Mahalle: " + hood.getName() + " - Nüfus: " + hood.getPopulation());
                 System.out.println("Kişiler:");
                 for (Person p : hood.getPeople()) {
@@ -110,4 +112,5 @@ public class Game {
     public static int citiesPerRow() {
         return CITIES_PER_ROW;
     }
+    
 }

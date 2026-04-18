@@ -1,3 +1,13 @@
+ /**
+  *
+  * @author Elif Yılmaz - elif.yilmaz41@ogr.sakarya.edu.tr
+  * @since 11 Nisan 2026
+  * <p>
+  * Şehir Nüfus Simülasyonu projesi kapsamında geliştirilen sınıftır.
+  * Nesne yönelimli programlama prensipleri kullanılarak oluşturulmuştur.
+  * </p>
+  * @group 1B
+  */
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -33,8 +43,10 @@ public class Main {
 
 		clearConsole();
 		game.printCityDetails(row, col);
-		scanner.close();
-	}
+		System.out.println("\nÇıkmak için herhangi bir tuşa basınız...");
+		scanner.nextLine(); 
+		scanner.close();	
+}
 
 	private static void clearConsole() {
 		try {
@@ -51,4 +63,5 @@ public class Main {
 			}
 		}
 	}
+	
 }

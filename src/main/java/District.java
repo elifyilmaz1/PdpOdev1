@@ -1,3 +1,13 @@
+ /**
+  *
+  * @author Elif Yılmaz - elif.yilmaz41@ogr.sakarya.edu.tr
+  * @since 11 Nisan 2026
+  * <p>
+  * Şehir Nüfus Simülasyonu projesi kapsamında geliştirilen sınıftır.
+  * Nesne yönelimli programlama prensipleri kullanılarak oluşturulmuştur.
+  * </p>
+  * @group 1B
+  */
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,11 +17,11 @@ import com.github.javafaker.Faker;
 public class District {
 
     private final String name;
-    private final List<Neighborhood> neighborhoods;
+    private final List<Neighbourhood> neighbourhoods;
 
     public District(String name) {
         this.name = name;
-        this.neighborhoods = new ArrayList<>();
+        this.neighbourhoods = new ArrayList<>();
     }
 
     public static District create(Faker faker) {
@@ -22,29 +32,29 @@ public class District {
         return name;
     }
 
-    public List<Neighborhood> getNeighborhoods() {
-        return Collections.unmodifiableList(neighborhoods);
+    public List<Neighbourhood> getNeighbourhoods() {
+        return Collections.unmodifiableList(neighbourhoods);
     }
 
-    void addNeighborhood(Neighborhood n) {
-        neighborhoods.add(n);
+    void addNeighbourhood(Neighbourhood n) {
+        neighbourhoods.add(n);
     }
 
-    public int getNeighborhoodCount() {
-        return neighborhoods.size();
+    public int getNeighbourhoodCount() {
+        return neighbourhoods.size();
     }
 
     public int getPopulation() {
         int sum = 0;
-        for (Neighborhood n : neighborhoods) {
+        for (Neighbourhood n : neighbourhoods) {
             sum += n.getPopulation();
         }
         return sum;
     }
 
-    List<Neighborhood> detachNeighborhoods() {
-        List<Neighborhood> copy = new ArrayList<>(neighborhoods);
-        neighborhoods.clear();
+    List<Neighbourhood> detachNeighbourhoods() {
+        List<Neighbourhood> copy = new ArrayList<>(neighbourhoods);
+        neighbourhoods.clear();
         return copy;
     }
 }

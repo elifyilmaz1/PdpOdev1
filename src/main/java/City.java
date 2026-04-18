@@ -1,3 +1,13 @@
+ /**
+  *
+  * @author Elif Yılmaz - elif.yilmaz41@ogr.sakarya.edu.tr
+  * @since 11 Nisan 2026
+  * <p>
+  * Şehir Nüfus Simülasyonu projesi kapsamında geliştirilen sınıftır.
+  * Nesne yönelimli programlama prensipleri kullanılarak oluşturulmuştur.
+  * </p>
+  * @group 1B
+  */
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,53 +36,51 @@ public class City {
 	    int units = code % 10;
 	    int districtCount = Math.max(1, tens);
 
-	    int totalNeighborhoods;
-	    boolean overflowed = false; // ← overflow flag'i
+	    int totalNeighbourhoods;
+	    boolean overflowed = false; 
 
 	    if (units == 0) {
-	        totalNeighborhoods = districtCount;
-	        overflowed = false; // units=0 durumu, overflow değil
+	        totalNeighbourhoods = districtCount;
+	        overflowed = false; 
 	    } else {
 	        int rem = units % districtCount;
 	        if (rem == 0) {
-	            totalNeighborhoods = units; // 62→6, 86→8 gibi zaten tam bölünüyor
+	            totalNeighbourhoods = units;
 	            overflowed = false;
 	        } else {
 	            int roundedUp = units + (districtCount - rem);
 	            if (roundedUp <= 9) {
-	                totalNeighborhoods = roundedUp; // 25→6, 37→9 gibi normal yuvarlama
+	                totalNeighbourhoods = roundedUp; 
 	                overflowed = false;
 	            } else {
-	                totalNeighborhoods = districtCount; // 79→7 gibi taşma
+	                totalNeighbourhoods = districtCount; 
 	                overflowed = true;
 	            }
 	        }
 	    }
 
-	    // Nüfus: sadece gerçekten taştıysa floor, diğer tüm durumlarda ceiling formülü
 	    int perHood;
 	    if (overflowed) {
-	        perHood = Math.max(1, code / totalNeighborhoods); // 79/7=11 → pop=77
+	        perHood = Math.max(1, code / totalNeighbourhoods); 
 	    } else {
-	        perHood = (code + totalNeighborhoods) / totalNeighborhoods; // ceiling
+	        perHood = (code + totalNeighbourhoods) / totalNeighbourhoods; 
 	    }
-	    int population = perHood * totalNeighborhoods;
 
 	    String cityName = faker.address().city();
 	    List<District> built = new ArrayList<>();
-	    int neighborhoodsPerDistrict = totalNeighborhoods / districtCount;
+	    int neighbourhoodsPerDistrict = totalNeighbourhoods / districtCount;
 
 	    for (int d = 0; d < districtCount; d++) {
 	        District district = District.create(faker);
-	        for (int n = 0; n < neighborhoodsPerDistrict; n++) {
-	            Neighborhood hood = Neighborhood.create(faker);
+	        for (int n = 0; n < neighbourhoodsPerDistrict; n++) {
+	        	Neighbourhood hood = Neighbourhood.create(faker);
 	            for (int p = 0; p < perHood; p++) {
 	                hood.addPerson(new Person(
 	                    faker.name().fullName(),
 	                    (int) faker.number().numberBetween(0, 51)
 	                ));
 	            }
-	            district.addNeighborhood(hood);
+	            district.addNeighbourhood(hood);
 	        }
 	        built.add(district);
 	    }
@@ -104,15 +112,15 @@ public class City {
 	}
 
 	public void applyPopulationGrowth(Faker faker) {
-	    List<Neighborhood> flat = allNeighborhoods();
+	    List<Neighbourhood> flat = allNeighbourhoods();
 	    if (flat.isEmpty()) return;
 
 	    int rate = growthRate();
-	    if (rate == 0) rate = 1;   // sıfırsa her mahallede 1 kişi artar
+	    if (rate == 0) rate = 1;  
 
-	    for (Neighborhood hood : flat) {
+	    for (Neighbourhood hood : flat) {
 	        int current = hood.getPeople().size();
-	        int toAdd = current * rate - current;  // (rate-1) × current kadar ekle
+	        int toAdd = current * rate - current;  
 	        for (int i = 0; i < toAdd; i++) {
 	            hood.addPerson(new Person(
 	                faker.name().fullName(),
@@ -124,7 +132,7 @@ public class City {
 
 	public void incrementAllAges() {
 		for (District district : districts) {
-			for (Neighborhood hood : district.getNeighborhoods()) {
+			for (Neighbourhood hood : district.getNeighbourhoods()) {
 				for (Person person : hood.getPeople()) {
 					person.incrementAge();
 				}
@@ -168,22 +176,11 @@ public class City {
 		return districts.size();
 	}
 
-	private List<Neighborhood> allNeighborhoods() {
-		List<Neighborhood> list = new ArrayList<>();
+	private List<Neighbourhood> allNeighbourhoods() {
+		List<Neighbourhood> list = new ArrayList<>();
 		for (District d : districts) {
-			list.addAll(d.getNeighborhoods());
+			list.addAll(d.getNeighbourhoods());
 		}
 		return list;
-	}
-
-	private static int nextMultipleAtLeast(int value, int divisor) {
-		if (divisor <= 0) {
-			return value;
-		}
-		int rem = value % divisor;
-		if (rem == 0) {
-			return value;
-		}
-		return value + (divisor - rem);
 	}
 }

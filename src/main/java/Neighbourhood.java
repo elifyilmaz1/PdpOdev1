@@ -1,3 +1,13 @@
+ /**
+  *
+  * @author Elif Yılmaz - elif.yilmaz41@ogr.sakarya.edu.tr
+  * @since 11 Nisan 2026
+  * <p>
+  * Şehir Nüfus Simülasyonu projesi kapsamında geliştirilen sınıftır.
+  * Nesne yönelimli programlama prensipleri kullanılarak oluşturulmuştur.
+  * </p>
+  * @group 1B
+  */
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -5,18 +15,18 @@ import java.util.List;
 import com.github.javafaker.Faker;
 
 
-public class Neighborhood {
+public class Neighbourhood {
 
 	private final String name;
 	private final List<Person> people;
 
-	public Neighborhood(String name) {
+	public Neighbourhood(String name) {
 		this.name = name;
 		this.people = new ArrayList<>();
 	}
 
-	public static Neighborhood create(Faker faker) {
-		return new Neighborhood(faker.address().streetName() + " " + faker.address().secondaryAddress());
+	public static Neighbourhood create(Faker faker) {
+		return new Neighbourhood(faker.address().streetName() + " " + faker.address().secondaryAddress());
 	}
 
 	public String getName() {

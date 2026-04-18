@@ -1,3 +1,13 @@
+ /**
+  *
+  * @author Elif Yılmaz - elif.yilmaz41@ogr.sakarya.edu.tr
+  * @since 11 Nisan 2026
+  * <p>
+  * Şehir Nüfus Simülasyonu projesi kapsamında geliştirilen sınıftır.
+  * Nesne yönelimli programlama prensipleri kullanılarak oluşturulmuştur.
+  * </p>
+  * @group 1B
+  */
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -28,6 +38,8 @@ public class Person {
     }
 
     public void incrementAge() {
-        age++;
+        if (age < 50) {
+            age++;
+        }
     }
-}
+}  
